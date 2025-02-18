@@ -28,7 +28,7 @@ public class SwiftSoundStreamPlugin: NSObject, FlutterPlugin {
     private let mAudioEngine = AVAudioEngine()
     private let mRecordBus = 0
     private var isRecording: Bool = false
-    private var mInputNode: AVAudioInputNode
+    private var mInputNode: AVAudioInputNode!
     private var mRecordSampleRate: Double = 16000 // 16Khz
     private var mRecordBufferSize: AVAudioFrameCount = 8192
     private var mRecordChannel = 0
@@ -46,6 +46,9 @@ public class SwiftSoundStreamPlugin: NSObject, FlutterPlugin {
     private var mPlayerOutputFormat: AVAudioFormat!
     private var mPlayerInputFormat: AVAudioFormat!
 
+    //========= Flags
+    private var isInitialized: Bool = false
+
     /** ======== Basic Plugin initialization ======== **/
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -57,12 +60,7 @@ public class SwiftSoundStreamPlugin: NSObject, FlutterPlugin {
     init( _ channel: FlutterMethodChannel, registrar: FlutterPluginRegistrar ) {
         self.channel = channel
         self.registrar = registrar
-        self.mInputNode = mAudioEngine.inputNode
-        self.mRecordMixer = AVAudioMixerNode()
-
         super.init()
-        self.attachPlayer()
-        mAudioEngine.prepare()
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -175,6 +173,13 @@ public class SwiftSoundStreamPlugin: NSObject, FlutterPlugin {
     }
 
     private func initializeRecorder(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        if(!isInitialized) {
+            self.mInputNode = mAudioEngine.inputNode
+            self.mRecordMixer = AVAudioMixerNode()
+            self.attachPlayer()
+            mAudioEngine.prepare()
+            isInitialized = true
+        }
         guard let argsArr = call.arguments as? Dictionary<String,AnyObject>
         else {
             sendResult(result, FlutterError( code: SoundStreamErrors.Unknown.rawValue,
