@@ -1,3 +1,6 @@
+## 0.4.2
+* Add flutter 3.29+ support from @beingmishra
+
 ## 0.4.1
 * Fix issue #62 - Orange microphone bubble remains on iOS
 
